@@ -1,0 +1,11 @@
+*~
+*.cert
+*.key
+*.crt
+*.pem
+.idea
+rmm
+!rmm/
+*.test
+dist/
+testdata*
