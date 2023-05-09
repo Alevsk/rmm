@@ -15,6 +15,9 @@ Taking inspiration from the `TBHM v4 recon edition by Jason Haddix` Workshop, I 
 
 ### Build from source
 
+> You will need a working Go environment. Therefore, please follow [How to install Go](https://golang.org/doc/install).
+> Minimum version required is go1.19
+
 ```bash
 make
 Building Recon MindMap (RMM) binary to './rmm'
