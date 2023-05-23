@@ -49,24 +49,29 @@ type Domain struct {
 	SubDomains []*Domain
 }
 
+type Node map[string]Node
+
 // CreateMindMap reads lines from the input source and creates a mind map as a map[string]interface{}.
-func CreateMindMap(source InputSource) (map[string]interface{}, error) {
+func CreateMindMap(source InputSource) (Node, error) {
 	lines, err := source.ReadLines() // read lines from input source
 	if err != nil {
 		return nil, err
 	}
-	root := make(map[string]interface{})
+	root := make(Node)
 	for _, domain := range lines { // for each domain in the input lines
+		if domain == "" {
+			continue
+		}
 		parts := strings.Split(domain, ".") // split domain by dot
 		currentNode := root
 		for i := len(parts) - 1; i >= 0; i-- { // iterate over parts in reverse order
 			key := strings.Join(parts[i:], ".") // join parts into key
 			childNode, ok := currentNode[key]   // get child node with key
 			if !ok {
-				childNode = make(map[string]interface{}) // create new child node if not found
+				childNode = make(Node) // create new child node if not found
 				currentNode[key] = childNode
 			}
-			currentNode = childNode.(map[string]interface{}) // set current node to child node
+			currentNode = childNode // set current node to child node
 		}
 	}
 	return root, nil

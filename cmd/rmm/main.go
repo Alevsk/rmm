@@ -25,7 +25,7 @@ Options:
     -f, --file               Filename from where to read input.
     -h, --help               Print command line options.
     -v, --version            Print version information.
-    -o, --output             Display result in different formats list|markdown|json|yaml (default: list)
+    -o, --output             Display result in different formats list|markdown|json|yaml|obsidian (default: list)
 `
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 
 	cmd.StringVarP(&fileName, "file", "f", "", "Filename from where to read input.")
 	cmd.BoolVarP(&showVersion, "version", "v", false, "Print version information.")
-	cmd.StringVarP(&outputFormat, "output", "o", "list", "Display result in different formats list|markdown|json|yaml (default: list)")
+	cmd.StringVarP(&outputFormat, "output", "o", "list", "Display result in different formats list|markdown|json|yaml|obsidian (default: list)")
 
 	if err := cmd.Parse(os.Args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -61,10 +61,21 @@ func main() {
 		cli.Fatalf("%v. See 'rmm --help'", err)
 	}
 
+	var source mindmap.InputSource
+
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		source := mindmap.ScannerInput{
+		source = mindmap.ScannerInput{
 			Scanner: bufio.NewScanner(os.Stdin),
 		}
+	} else {
+		if fileName != "" {
+			source = mindmap.FileInput{
+				FilePath: fileName,
+			}
+		}
+	}
+
+	if source != nil {
 		tree, err := mindmap.CreateMindMap(source)
 		if err != nil {
 			cli.Fatalf("%v. See 'rmm --help'", err)
@@ -76,51 +87,31 @@ func main() {
 			cli.PrintYAML(tree)
 		case "markdown":
 			cli.PrintMarkdown(tree)
+		case "obsidian":
+			cli.PrintObsidianCanvas(tree)
 		case "list":
 			cli.PrintList(tree)
 		default:
 			cli.PrintList(tree)
 		}
 		return
-	} else {
-		if fileName != "" {
-			source := mindmap.FileInput{
-				FilePath: fileName,
-			}
-			tree, _ := mindmap.CreateMindMap(source)
-			if err != nil {
-				cli.Fatalf("%v. See 'rmm --help'", err)
-			}
-			switch outputFormat {
-			case "json":
-				cli.PrintJSON(tree)
-			case "yaml":
-				cli.PrintYAML(tree)
-			case "markdown":
-				cli.PrintMarkdown(tree)
-			case "list":
-				cli.PrintList(tree)
-			default:
-				cli.PrintList(tree)
-			}
-			return
-		} else {
-			subCmds := commands{
-				"server": func(s []string) { fmt.Println("running server") },
-				"update": func(s []string) { fmt.Println("updating binary") },
-			}
-			if len(os.Args) > 1 {
-				if subCmd, ok := subCmds[os.Args[1]]; ok {
-					subCmd(os.Args[1:])
-					return
-				}
-			}
-			if cmd.NArg() > 1 {
-				cli.Fatalf("%q is not a rmm command. See 'rmm --help'", cmd.Arg(1))
-			}
-		}
-
-		cmd.Usage()
-		os.Exit(2)
 	}
+
+	subCmds := commands{
+		"server": func(s []string) { fmt.Println("running server") },
+		"update": func(s []string) { fmt.Println("updating binary") },
+	}
+	if len(os.Args) > 1 {
+		if subCmd, ok := subCmds[os.Args[1]]; ok {
+			subCmd(os.Args[1:])
+			return
+		}
+	}
+	if cmd.NArg() > 1 {
+		cli.Fatalf("%q is not a rmm command. See 'rmm --help'", cmd.Arg(1))
+	}
+
+	cmd.Usage()
+	os.Exit(2)
+
 }

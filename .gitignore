@@ -9,3 +9,4 @@ rmm
 *.test
 dist/
 testdata*
+*.code-workspace

@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Alevsk/rmm/internal/mindmap"
+	"github.com/Alevsk/rmm/internal/obsidian"
 	tui "github.com/charmbracelet/lipgloss"
 	"gopkg.in/yaml.v2"
 )
@@ -31,7 +33,7 @@ func Printf(format string, v ...any) (int, error) { return fmt.Printf(format, v.
 
 func Println(v ...any) (int, error) { return fmt.Println(v...) }
 
-func PrintYAML(tree map[string]interface{}) {
+func PrintYAML(tree mindmap.Node) {
 	yamlBytes, err := yaml.Marshal(tree)
 	if err != nil {
 		Fatalf("%v. See 'rmm --help'", err)
@@ -41,7 +43,7 @@ func PrintYAML(tree map[string]interface{}) {
 }
 
 // PrintJSON takes in a map of type string to interface{}, which represents a JSON tree.
-func PrintJSON(tree map[string]interface{}) {
+func PrintJSON(tree mindmap.Node) {
 	// Marshal the JSON tree into a formatted string with the given indentation prefix and spaces.
 	data, err := json.MarshalIndent(tree, "", "  ")
 	if err != nil {
@@ -55,7 +57,7 @@ func PrintJSON(tree map[string]interface{}) {
 // TreeToList takes in a map of type string to interface{} and returns a string that represents a list of the key-value pairs in the map.
 // The map can be nested, and its keys will be sorted alphabetically.
 // The list will have a nested structure that reflects the structure of the map.
-func TreeToList(data map[string]interface{}, markdown bool) string {
+func TreeToList(data mindmap.Node, markdown bool) string {
 	// Define a struct that represents a key-value pair and its prefix in the markdown list.
 	type entry struct {
 		key    string
@@ -80,7 +82,7 @@ func TreeToList(data map[string]interface{}, markdown bool) string {
 		value := e.value
 
 		switch v := value.(type) {
-		case map[string]interface{}:
+		case mindmap.Node:
 			// If the value is a map, add its prefix and key (if not empty) to the result as a markdown list item.
 			if key != "" {
 				listSymbol := ""
@@ -119,11 +121,20 @@ func TreeToList(data map[string]interface{}, markdown bool) string {
 }
 
 // PrintMarkdown output the tree in markdown format using an unsorted list
-func PrintMarkdown(tree map[string]interface{}) {
+func PrintMarkdown(tree mindmap.Node) {
 	fmt.Println(TreeToList(tree, true))
 }
 
 // PrintList output the tree in plaintext format using tabs
-func PrintList(tree map[string]interface{}) {
+func PrintList(tree mindmap.Node) {
 	fmt.Println(TreeToList(tree, false))
+}
+
+func PrintObsidianCanvas(tree mindmap.Node) {
+	canvas := obsidian.GenerateObsidianCanvas(tree)
+	data, err := json.MarshalIndent(canvas, "", "  ")
+	if err != nil {
+		Fatalf("%v. See 'rmm --help'", err)
+	}
+	fmt.Println(string(data))
 }

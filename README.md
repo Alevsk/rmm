@@ -83,7 +83,7 @@ Open Xmind and paste the result directly into the mind map tool.
 
 ![Xmind](./docs/rmm-xmind.png)
 
-#### Obsidian Mind Map
+#### Obsidian Mind Map (plugin)
 
 Provide a list of domains directly to `RMM`, Obsidian requires the content to be in `MarkDown` format for it to render (pass the `-o markdown` flag), and copy the result directly into your clipboard.
 
@@ -92,6 +92,17 @@ curl https://raw.githubusercontent.com/JamieFarrelly/Popular-Site-Subdomains/mas
 ```
 
 ![Obsidian Mind Map](./docs/rmm-obsidian-mind-map.png)
+
+#### Obsidian Canvas
+
+Provide a list of domains directly to `RMM`, Obsidian Canvas requires the content to be in `JSON-based` format for it to render (pass the `-o obsidian` flag), redirect output into a file and copy the file into your vault.
+
+```bash
+curl https://raw.githubusercontent.com/JamieFarrelly/Popular-Site-Subdomains/master/Microsoft.com.txt | ./rmm -o obsidian > rmm.canvas
+cp rmm.canvas ~/Obsidian/Notes/rmm.canvas
+```
+
+![Obsidian Mind Map](./docs//rmm-microsoft-obsidian.png)
 
 #### Run inside docker
 

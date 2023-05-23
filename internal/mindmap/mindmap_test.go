@@ -65,7 +65,7 @@ func TestCreateMindMap(t *testing.T) {
 		}
 	}`
 
-	var treeTest1 map[string]interface{}
+	var treeTest1 Node
 	err := json.Unmarshal([]byte(dataTest1), &treeTest1)
 	if err != nil {
 		panic(err)
@@ -75,7 +75,7 @@ func TestCreateMindMap(t *testing.T) {
 		name          string
 		args          args
 		readLinesFunc func() ([]string, error)
-		want          map[string]interface{}
+		want          Node
 		wantErr       bool
 	}{
 		{
