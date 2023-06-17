@@ -10,15 +10,15 @@ import (
 type scannerInputMock struct {
 }
 
-func (s scannerInputMock) ReadLines() ([]string, error) {
+func (s scannerInputMock) ReadLines() <-chan LineResult {
 	return scannerInputReadLinesFunc()
 }
 
-var scannerInputReadLinesFunc func() ([]string, error)
+var scannerInputReadLinesFunc func() <-chan LineResult
 
 func TestCreateMindMap(t *testing.T) {
 	type args struct {
-		source InputSource
+		source scannerInputMock
 	}
 	// mocking
 	scannerMock := scannerInputMock{}
@@ -74,7 +74,7 @@ func TestCreateMindMap(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		readLinesFunc func() ([]string, error)
+		readLinesFunc func() <-chan LineResult
 		want          Node
 		wantErr       bool
 	}{
@@ -83,40 +83,53 @@ func TestCreateMindMap(t *testing.T) {
 			args: args{
 				source: scannerMock,
 			},
-			readLinesFunc: func() ([]string, error) {
-				return []string{
-					"chi.itesm.mx",
-					"itesm.mx",
-					"ags.itesm.mx",
-					"slp.itesm.mx",
-					"tecreview.mx",
-					"rzn.itesm.mx",
-					"mty.itesm.mx",
-					"web8.mty.itesm.mx",
-					"sistema.itesm.mx",
-					"sorteotec.itesm.mx",
-					"prepatec.soy",
-					"zac.itesm.mx",
-					"ruv.itesm.mx",
-					"itesm.edu.mx",
-					"lag.itesm.mx",
-					"dm.itesm.mx",
-					"cegs.itesm.mx",
-					"tecreview.itesm.mx",
-					"exatec1.itesm.mx",
-					"btec.itesm.mx",
-					"tecmilenio.edu.mx",
-					"net.itesm.mx",
-					"comunicacionypublicidad.queretaro.itesm.mx",
-					"apps.itesm.mx",
-					"sitios.itesm.mx",
-					"admision.itesm.mx",
-					"cdj.itesm.mx",
-					"queretaro.itesm.mx",
-					"identidad.queretaro.itesm.mx",
-					"admisionprepatec.itesm.mx",
-					"sal.itesm.mx",
-				}, nil
+			readLinesFunc: func() <-chan LineResult {
+				linesCh := make(chan LineResult)
+
+				go func() {
+					defer close(linesCh)
+
+					lines := []string{
+						"chi.itesm.mx",
+						"itesm.mx",
+						"ags.itesm.mx",
+						"slp.itesm.mx",
+						"tecreview.mx",
+						"rzn.itesm.mx",
+						"mty.itesm.mx",
+						"web8.mty.itesm.mx",
+						"sistema.itesm.mx",
+						"sorteotec.itesm.mx",
+						"prepatec.soy",
+						"zac.itesm.mx",
+						"ruv.itesm.mx",
+						"itesm.edu.mx",
+						"lag.itesm.mx",
+						"dm.itesm.mx",
+						"cegs.itesm.mx",
+						"tecreview.itesm.mx",
+						"exatec1.itesm.mx",
+						"btec.itesm.mx",
+						"tecmilenio.edu.mx",
+						"net.itesm.mx",
+						"comunicacionypublicidad.queretaro.itesm.mx",
+						"apps.itesm.mx",
+						"sitios.itesm.mx",
+						"admision.itesm.mx",
+						"cdj.itesm.mx",
+						"queretaro.itesm.mx",
+						"identidad.queretaro.itesm.mx",
+						"admisionprepatec.itesm.mx",
+						"sal.itesm.mx",
+					}
+
+					for _, line := range lines {
+						linesCh <- LineResult{Line: line}
+					}
+
+				}()
+
+				return linesCh
 			},
 			want:    treeTest1,
 			wantErr: false,
@@ -126,8 +139,13 @@ func TestCreateMindMap(t *testing.T) {
 			args: args{
 				source: scannerMock,
 			},
-			readLinesFunc: func() ([]string, error) {
-				return nil, errors.New("something went wrong")
+			readLinesFunc: func() <-chan LineResult {
+				linesCh := make(chan LineResult)
+				go func() {
+					defer close(linesCh)
+					linesCh <- LineResult{Error: errors.New("something went wrong")}
+				}()
+				return linesCh
 			},
 			want:    nil,
 			wantErr: true,
@@ -143,7 +161,6 @@ func TestCreateMindMap(t *testing.T) {
 				t.Errorf("CreateMindMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CreateMindMap() = %v, want %v", got, tt.want)
 			}

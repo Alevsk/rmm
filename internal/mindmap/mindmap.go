@@ -7,41 +7,60 @@ import (
 )
 
 type InputSource interface {
-	ReadLines() ([]string, error)
+	ReadLines() <-chan LineResult
+}
+
+type LineResult struct {
+	Line  string
+	Error error
 }
 
 type FileInput struct {
 	FilePath string
 }
 
-func (f FileInput) ReadLines() ([]string, error) {
-	file, err := os.Open(f.FilePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+func (f FileInput) ReadLines() <-chan LineResult {
+	linesCh := make(chan LineResult)
+	go func() {
+		defer close(linesCh)
+		file, err := os.Open(f.FilePath)
+		if err != nil {
+			linesCh <- LineResult{Error: err}
+			return
+		}
+		defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+		scanner := bufio.NewScanner(file)
 
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
+		for scanner.Scan() {
+			linesCh <- LineResult{Line: scanner.Text()}
+		}
 
-	return lines, scanner.Err()
+		if scanner.Err() != nil {
+			linesCh <- LineResult{Error: scanner.Err()}
+		}
+	}()
+	return linesCh
 }
 
 type ScannerInput struct {
 	Scanner *bufio.Scanner
 }
 
-func (s ScannerInput) ReadLines() ([]string, error) {
-	var lines []string
-	for s.Scanner.Scan() {
-		lines = append(lines, s.Scanner.Text())
-	}
+func (s ScannerInput) ReadLines() <-chan LineResult {
+	linesCh := make(chan LineResult)
+	go func() {
+		defer close(linesCh)
 
-	return lines, s.Scanner.Err()
+		for s.Scanner.Scan() {
+			linesCh <- LineResult{Line: s.Scanner.Text()}
+		}
+
+		if s.Scanner.Err() != nil {
+			linesCh <- LineResult{Error: s.Scanner.Err()}
+		}
+	}()
+	return linesCh
 }
 
 type Domain struct {
@@ -53,15 +72,16 @@ type Node map[string]Node
 
 // CreateMindMap reads lines from the input source and creates a mind map as a map[string]interface{}.
 func CreateMindMap(source InputSource) (Node, error) {
-	lines, err := source.ReadLines() // read lines from input source
-	if err != nil {
-		return nil, err
-	}
+	linesCh := source.ReadLines() // read lines from input source
 	root := make(Node)
-	for _, domain := range lines { // for each domain in the input lines
-		if domain == "" {
+	for lineRes := range linesCh {
+		if lineRes.Error != nil {
+			return nil, lineRes.Error
+		}
+		if lineRes.Line == "" {
 			continue
 		}
+		domain := lineRes.Line
 		parts := strings.Split(domain, ".") // split domain by dot
 		currentNode := root
 		for i := len(parts) - 1; i >= 0; i-- { // iterate over parts in reverse order
