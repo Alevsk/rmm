@@ -71,7 +71,7 @@ type Domain struct {
 
 // parseHostname takes a string input representing a URL and returns the hostname and path of the URL.
 func parseHostname(input string) (string, string) {
-	if !strings.HasPrefix(input, "http://") && !strings.HasPrefix(input, "https://") {
+	if !strings.Contains(input, "://") {
 		input = "http://" + input
 	}
 	u, err := url.Parse(input)

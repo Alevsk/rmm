@@ -182,6 +182,7 @@ func TestCreateMindMap(t *testing.T) {
 						"www.host.com/path1",
 						"www.host.com/path2",
 						"www.host.com/path3",
+						"ftp://www.google.com",
 						"www.google.com",
 					}
 
