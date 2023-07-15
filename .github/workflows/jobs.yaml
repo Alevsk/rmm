@@ -1,0 +1,72 @@
+name: Workflow
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+# This ensures that previous jobs for the PR are canceled when the PR is
+# updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Test and build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Run tests
+        run: |
+          make test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build container
+        run: |
+          make docker
+
+  build-and-push-container:
+    name: Build and push container image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    needs:
+      - test-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set build time
+        run: |
+          echo "BUILD_TIME=$(date -u +%Y-%m-%dT%H-%M-%SZ 2>/dev/null)" >> $GITHUB_ENV
+          echo "HUMAN_DATE=$(date 2>/dev/null)" >> $GITHUB_ENV
+      - name: Build and push
+        uses: docker/build-push-action@v1
+        with:
+          platforms: linux/amd64
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: alevsk/alevsk.com
+          push: true
+          build-args: build_time=${{env.HUMAN_DATE }}
+          tags: latest, RELEASE.${{ env.BUILD_TIME }}
