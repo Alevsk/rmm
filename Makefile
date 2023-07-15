@@ -13,3 +13,6 @@ clean:
 
 docker:
 	@docker build -t alevsk/rmm .
+
+test:
+	@go test ./...

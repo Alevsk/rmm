@@ -47,7 +47,7 @@ Options:
     -f, --file               Filename from where to read input.
     -h, --help               Print command line options.
     -v, --version            Print version information.
-    -o, --output             Display result in different formats list|markdown|json|yaml (default: list)
+    -o, --output             Display result in different formats list|markdown|json|yaml|obsidian (default: list)
 ```
 
 ### Run inside docker
