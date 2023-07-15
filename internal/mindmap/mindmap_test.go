@@ -71,6 +71,23 @@ func TestCreateMindMap(t *testing.T) {
 		panic(err)
 	}
 
+	dataTest3 := `{
+		"com": {
+			"google.com": {
+				"www.google.com": {}
+			},
+			"host.com": {
+				"www.host.com": {}
+			}
+		}
+	}`
+
+	var treeTest3 Node
+	err = json.Unmarshal([]byte(dataTest3), &treeTest3)
+	if err != nil {
+		panic(err)
+	}
+
 	tests := []struct {
 		name          string
 		args          args
@@ -149,6 +166,35 @@ func TestCreateMindMap(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name: "Test 3: Correctly parsing domains that contain paths",
+			args: args{
+				source: scannerMock,
+			},
+			readLinesFunc: func() <-chan LineResult {
+				linesCh := make(chan LineResult)
+
+				go func() {
+					defer close(linesCh)
+
+					lines := []string{
+						"www.host.com/path1",
+						"www.host.com/path2",
+						"www.host.com/path3",
+						"www.google.com",
+					}
+
+					for _, line := range lines {
+						linesCh <- LineResult{Line: line}
+					}
+
+				}()
+
+				return linesCh
+			},
+			want:    treeTest3,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
