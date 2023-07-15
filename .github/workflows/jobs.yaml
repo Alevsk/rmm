@@ -66,7 +66,7 @@ jobs:
           platforms: linux/amd64
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: alevsk/alevsk.com
+          repository: alevsk/rmm
           push: true
           build-args: build_time=${{env.HUMAN_DATE }}
           tags: latest, RELEASE.${{ env.BUILD_TIME }}
