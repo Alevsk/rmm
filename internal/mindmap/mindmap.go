@@ -2,6 +2,7 @@ package mindmap
 
 import (
 	"bufio"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -68,6 +69,18 @@ type Domain struct {
 	SubDomains []*Domain
 }
 
+// parseHostname takes a string input representing a URL and returns the hostname and path of the URL.
+func parseHostname(input string) (string, string) {
+	if !strings.Contains(input, "://") {
+		input = "http://" + input
+	}
+	u, err := url.Parse(input)
+	if err != nil {
+		return "", ""
+	}
+	return u.Host, u.Path
+}
+
 type Node map[string]Node
 
 // CreateMindMap reads lines from the input source and creates a mind map as a map[string]interface{}.
@@ -81,8 +94,8 @@ func CreateMindMap(source InputSource) (Node, error) {
 		if lineRes.Line == "" {
 			continue
 		}
-		domain := lineRes.Line
-		parts := strings.Split(domain, ".") // split domain by dot
+		hostname, _ := parseHostname(lineRes.Line)
+		parts := strings.Split(hostname, ".") // split domain by dot
 		currentNode := root
 		for i := len(parts) - 1; i >= 0; i-- { // iterate over parts in reverse order
 			key := strings.Join(parts[i:], ".") // join parts into key

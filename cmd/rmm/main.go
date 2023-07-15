@@ -63,15 +63,13 @@ func main() {
 
 	var source mindmap.InputSource
 
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
+	if fileName != "" {
+		source = mindmap.FileInput{
+			FilePath: fileName,
+		}
+	} else if (stat.Mode() & os.ModeCharDevice) == 0 {
 		source = mindmap.ScannerInput{
 			Scanner: bufio.NewScanner(os.Stdin),
-		}
-	} else {
-		if fileName != "" {
-			source = mindmap.FileInput{
-				FilePath: fileName,
-			}
 		}
 	}
 
