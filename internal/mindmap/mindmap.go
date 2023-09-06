@@ -83,8 +83,8 @@ func parseHostname(input string) (string, string) {
 
 type Node map[string]Node
 
-// CreateMindMap reads lines from the input source and creates a mind map as a map[string]interface{}.
-func CreateMindMap(source InputSource) (Node, error) {
+// New reads lines from the input source and creates a mind map as a map[string]interface{}.
+func New(source InputSource) (Node, error) {
 	linesCh := source.ReadLines() // read lines from input source
 	root := make(Node)
 	for lineRes := range linesCh {

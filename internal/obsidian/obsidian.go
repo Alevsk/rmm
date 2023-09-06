@@ -52,7 +52,7 @@ func calculateChildY(parentY, childNumber int) int {
 	}
 }
 
-func GenerateObsidianCanvas(tree mindmap.Node) ObsidianCanvas {
+func NewCanvas(tree mindmap.Node) ObsidianCanvas {
 	canvas := ObsidianCanvas{}
 	stack := []nodeStackEntry{}
 	coordsXnY := make(map[int]map[int]bool)

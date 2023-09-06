@@ -203,7 +203,7 @@ func TestCreateMindMap(t *testing.T) {
 			if tt.readLinesFunc != nil {
 				scannerInputReadLinesFunc = tt.readLinesFunc
 			}
-			got, err := CreateMindMap(tt.args.source)
+			got, err := New(tt.args.source)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateMindMap() error = %v, wantErr %v", err, tt.wantErr)
 				return

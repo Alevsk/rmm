@@ -131,7 +131,7 @@ func PrintList(tree mindmap.Node) {
 }
 
 func PrintObsidianCanvas(tree mindmap.Node) {
-	canvas := obsidian.GenerateObsidianCanvas(tree)
+	canvas := obsidian.NewCanvas(tree)
 	data, err := json.MarshalIndent(canvas, "", "  ")
 	if err != nil {
 		Fatalf("%v. See 'rmm --help'", err)

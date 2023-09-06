@@ -74,23 +74,23 @@ func main() {
 	}
 
 	if source != nil {
-		tree, err := mindmap.CreateMindMap(source)
+		mmap, err := mindmap.New(source)
 		if err != nil {
 			cli.Fatalf("%v. See 'rmm --help'", err)
 		}
 		switch outputFormat {
 		case "json":
-			cli.PrintJSON(tree)
+			cli.PrintJSON(mmap)
 		case "yaml":
-			cli.PrintYAML(tree)
+			cli.PrintYAML(mmap)
 		case "markdown":
-			cli.PrintMarkdown(tree)
+			cli.PrintMarkdown(mmap)                           
 		case "obsidian":
-			cli.PrintObsidianCanvas(tree)
+			cli.PrintObsidianCanvas(mmap)
 		case "list":
-			cli.PrintList(tree)
+			cli.PrintList(mmap)
 		default:
-			cli.PrintList(tree)
+			cli.PrintList(mmap)
 		}
 		return
 	}
