@@ -71,13 +71,67 @@ func TestCreateMindMap(t *testing.T) {
 		panic(err)
 	}
 
-	dataTest3 := `{
+	dataTest2 := `{
 		"com": {
 			"google.com": {
 				"www.google.com": {}
 			},
 			"host.com": {
 				"www.host.com": {}
+			}
+		}
+	}`
+
+	var treeTest2 Node
+	err = json.Unmarshal([]byte(dataTest2), &treeTest2)
+	if err != nil {
+		panic(err)
+	}
+
+	dataTest3 := `
+	{
+		"10.0.0.0": {
+			"10.0.0.2": {},
+			"10.0.0.3": {},
+			"10.0.0.4": {},
+			"10.0.0.5": {},
+			"10.0.0.6": {}
+		},
+		"172.0.0.0": {
+			"172.16.0.0": {
+				"172.16.0.10": {},
+				"172.16.0.11": {},
+				"172.16.0.2": {},
+				"172.16.0.3": {},
+				"172.16.0.4": {},
+				"172.16.0.5": {},
+				"172.16.0.6": {},
+				"172.16.0.7": {},
+				"172.16.0.8": {},
+				"172.16.0.9": {}
+			}
+		},
+		"192.0.0.0": {
+			"192.168.0.0": {
+				"192.168.1.0": {
+					"192.168.1.10": {},
+					"192.168.1.11": {},
+					"192.168.1.2": {},
+					"192.168.1.3": {},
+					"192.168.1.4": {},
+					"192.168.1.5": {},
+					"192.168.1.6": {},
+					"192.168.1.7": {},
+					"192.168.1.8": {},
+					"192.168.1.9": {}
+				},
+				"192.168.2.0": {
+					"192.168.2.2": {},
+					"192.168.2.3": {},
+					"192.168.2.4": {},
+					"192.168.2.5": {},
+					"192.168.2.6": {}
+				}
 			}
 		}
 	}`
@@ -194,6 +248,57 @@ func TestCreateMindMap(t *testing.T) {
 
 				return linesCh
 			},
+			want:    treeTest2,
+			wantErr: false,
+		},
+		{
+			name: "Test 4: Correctly parsing IPV4 addresses",
+			args: args{
+				source: scannerMock,
+			},
+			readLinesFunc: func() <-chan LineResult {
+				linesCh := make(chan LineResult)
+
+				go func() {
+					defer close(linesCh)
+					lines := []string{
+						"192.168.1.2",
+						"192.168.1.3",
+						"192.168.1.4",
+						"192.168.1.5",
+						"192.168.1.6",
+						"192.168.1.7",
+						"192.168.1.8",
+						"192.168.1.9",
+						"192.168.1.10",
+						"192.168.1.11",
+						"192.168.2.2",
+						"192.168.2.3",
+						"192.168.2.4",
+						"192.168.2.5",
+						"192.168.2.6",
+						"10.0.0.2",
+						"10.0.0.3",
+						"10.0.0.4",
+						"10.0.0.5",
+						"10.0.0.6",
+						"172.16.0.2",
+						"172.16.0.3",
+						"172.16.0.4",
+						"172.16.0.5",
+						"172.16.0.6",
+						"172.16.0.7",
+						"172.16.0.8",
+						"172.16.0.9",
+						"172.16.0.10",
+						"172.16.0.11",
+					}
+					for _, line := range lines {
+						linesCh <- LineResult{Line: line}
+					}
+				}()
+				return linesCh
+			},
 			want:    treeTest3,
 			wantErr: false,
 		},
@@ -203,7 +308,7 @@ func TestCreateMindMap(t *testing.T) {
 			if tt.readLinesFunc != nil {
 				scannerInputReadLinesFunc = tt.readLinesFunc
 			}
-			got, err := CreateMindMap(tt.args.source)
+			got, err := New(tt.args.source)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateMindMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
