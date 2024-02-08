@@ -1,6 +1,4 @@
-FROM golang:1.19 as golayer
-
-RUN apt-get update -y && apt-get install -y ca-certificates
+FROM golang:1.21 as golayer
 
 ADD go.mod /go/src/github.com/Alevsk/rmm/go.mod
 ADD go.sum /go/src/github.com/Alevsk/rmm/go.sum
