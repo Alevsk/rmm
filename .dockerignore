@@ -1,7 +1,8 @@
-node_modules/
-dist/
-target/
 .git/
-k8s/
 Makefile
 README.md
+dist/
+examples/
+k8s/
+node_modules/
+target/
