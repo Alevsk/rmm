@@ -2,7 +2,7 @@
 	"name": "Go",
 	"image": "mcr.microsoft.com/devcontainers/go:1-1.21-bullseye",
 	"features": {
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:3": {},
 		"ghcr.io/jungaretti/features/make:1": {}
 	}
 }
